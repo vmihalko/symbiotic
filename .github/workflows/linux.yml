@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - vmihalko-ci-noble-pr
   pull_request:
     branches:
       - main
