@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+      # Scaffolding: this workflow only runs on pushes to main, so a fork
+      # branch gets no CI signal at all.  Drop this line before merging.
+      - vmihalko-ci-noble
   pull_request:
     branches:
       - main
