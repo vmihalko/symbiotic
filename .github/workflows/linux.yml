@@ -41,7 +41,14 @@ jobs:
           sudo apt update
           sudo apt install ccache cmake clang-${{matrix.llvm}} \
                            llvm-${{matrix.llvm}}-dev gcc-multilib \
-                           libz3-dev python3-clang
+                           libz3-dev
+
+          # Ubuntu 24.04 packages the bindings only versioned.
+          sudo apt install python3-clang-${{matrix.llvm}} \
+            || sudo apt install python3-clang
+
+          # Fail here rather than deep inside the witness writer.
+          python3 -c "import clang.cindex"
 
       - name: Set environment
         id: env
