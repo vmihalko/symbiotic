@@ -81,9 +81,15 @@ jobs:
               CXXFLAGS="-shared-libasan $CXXFLAGS"
             fi
 
-            # Dynamic compiler-rt libraries are not in /usr/lib
-            tmp="$(clang-${{matrix.llvm}} -print-file-name=libclang_rt.asan-x86_64.so)"
-            LD_LIBRARY_PATH="$(dirname "$tmp")"
+            # Dynamic compiler-rt libraries are not in /usr/lib.  Older
+            # clang names the runtime libclang_rt.asan-x86_64.so, newer clang
+            # uses a per-target directory and calls it libclang_rt.asan.so,
+            # so ask for both and keep the one that exists.
+            ASAN_RT="$(clang-${{matrix.llvm}} -print-file-name=libclang_rt.asan-x86_64.so)"
+            if [ ! -e "$ASAN_RT" ]; then
+              ASAN_RT="$(clang-${{matrix.llvm}} -print-file-name=libclang_rt.asan.so)"
+            fi
+            LD_LIBRARY_PATH="$(dirname "$ASAN_RT")"
 
             # Force coloured output
             CFLAGS="-fcolor-diagnostics $CFLAGS"
@@ -105,6 +111,7 @@ jobs:
           echo "CXXFLAGS=$CXXFLAGS" >> $GITHUB_ENV
           echo "LDFLAGS=$LDFLAGS" >> $GITHUB_ENV
           echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> $GITHUB_ENV
+          echo "ASAN_RT=$ASAN_RT" >> $GITHUB_ENV
 
           # Set up ccache
           sudo /usr/sbin/update-ccache-symlinks
@@ -138,7 +145,7 @@ jobs:
           if [[ "${{matrix.compiler}}" = "clang" ]] && [[ "${{matrix.llvm}}" != "11" ]]; then
             # libclang_rt.asan-x86_64.so must be loaded as the first library
             # See https://systemd.io/TESTING_WITH_SANITIZERS for details.
-            export LD_PRELOAD="$(clang-${{matrix.llvm}} -print-file-name=libclang_rt.asan-x86_64.so)"
+            export LD_PRELOAD="$ASAN_RT"
           else
             export LD_PRELOAD="$(gcc -print-file-name=libasan.so)"
           fi
