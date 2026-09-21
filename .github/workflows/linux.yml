@@ -29,6 +29,23 @@ jobs:
           - {os: ubuntu-22.04, llvm: 13, compiler: clang}
           - {os: ubuntu-22.04, llvm: 14, compiler: clang}
 
+          # Ubuntu 24.04, the migration target before ubuntu-22.04 is retired
+          # on 2027-04-17 (actions/runner-images#14254).  These rows are added
+          # beside the jammy ones rather than replacing them: noble carries no
+          # llvm-11, llvm-12 or llvm-13, and apt.llvm.org does not build those
+          # for noble either, so bumping the label alone would drop six of the
+          # ten configurations tested above.
+          - {os: ubuntu-24.04, llvm: 14, compiler: gcc}
+          - {os: ubuntu-24.04, llvm: 14, compiler: clang}
+
+          # Above the LLVM version Symbiotic is known to build with.  These
+          # rows are here to find where the ceiling actually is; they are
+          # expected to be red until someone raises it.
+          - {os: ubuntu-24.04, llvm: 16, compiler: gcc}
+          - {os: ubuntu-24.04, llvm: 16, compiler: clang}
+          - {os: ubuntu-24.04, llvm: 18, compiler: gcc}
+          - {os: ubuntu-24.04, llvm: 18, compiler: clang}
+
     runs-on: ${{matrix.os}}
     steps:
       - name: Checkout Symbiotic and submodules
