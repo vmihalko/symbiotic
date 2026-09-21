@@ -41,7 +41,16 @@ jobs:
           sudo apt update
           sudo apt install ccache cmake clang-${{matrix.llvm}} \
                            llvm-${{matrix.llvm}}-dev gcc-multilib \
-                           libz3-dev python3-clang
+                           libz3-dev
+
+          # The witness writer imports clang.cindex.  Take the bindings that
+          # match this row's clang where they are packaged separately, and
+          # fall back to the unversioned package otherwise.
+          sudo apt install python3-clang-${{matrix.llvm}} \
+            || sudo apt install python3-clang
+
+          # Fail here rather than deep inside the witness writer.
+          python3 -c "import clang.cindex"
 
       - name: Set environment
         id: env
