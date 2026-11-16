@@ -308,6 +308,12 @@ def sequentialize(source, prp, is32bit, cseqdir, outdir):
     if _writes_thread_parameter(text):
         dbg('A thread assigns its parameter')
         return None
+    # CSeq's race detector takes a member access (* p).f (p->f) for an
+    # access to the whole object at p, so that two threads writing different
+    # members of one struct race (per-thread-struct-tid)
+    if prp.datarace() and re.search(r'\(\*[^;\n]*\)\.[A-Za-z_]', text):
+        dbg('The race checks do not distinguish the members of a struct')
+        return None
     if prp.datarace():
         text = _postprocess_race(text, name)
     else:
